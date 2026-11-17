@@ -1,0 +1,9 @@
+Build a make.fun token-radar-01 entry called Token Radar, model radar-4, from scratch. Write all code original in this session, from this brief only — do not read any prior radar code.
+
+The program is TypeScript (main.ts at the repo root). It reads a sealed JSON snapshot at /input/snapshot.json (758 protocols, each with name, chain(s), TVL, category, 7-day change, listing date, watchlist flags) and writes out/board.json (ranked rows), out/data.js, out/dashboard/ (an HTML dashboard), out/dossier.json (via vendor/makefun-board.ts from the kit). It runs offline, deterministic, no network.
+
+Model radar-4: score each protocol by its TVL on a log scale (square root times 3000) times a chain pay (1 + 0.70 × summed chain weight, capped at 1.35; each chain weighed by its share of the live set's total TVL), a category crowding discount 1 / (1 + 0.06 × ln(n)), a bleeding penalty (up to a further 15% off past a −20% 7-day drop, beyond the linear growth term), a completeness haircut (−3% if the 7-day change is missing, −2% if the listing date is unreported), and a maturity term for how long it ran with no token. A farm plan per row names the cheapest chain to farm on.
+
+Dashboard: a clean HTML board with the ranked rows, a detail view showing the full arithmetic waterfall, sandbox sliders for the model parameters, and a watchlist filter. Three screenshots (board, detail, watchlist-filtered), 1280×900, each under 512 KiB.
+
+The program must produce exactly 203 rows on the local snapshot (40 watchlist + 163 early) and all outputs must be valid.

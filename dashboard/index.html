@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Token Radar — radar-4</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <h1>TOKEN RADAR</h1>
+    <p class="sub">Which pre-token protocol is worth farming, and what its token would be worth</p>
+  </div>
+  <div class="stats" id="stats"></div>
+</header>
+
+<main>
+  <section class="panel" id="sandboxPanel">
+    <h2>Model sandbox <span class="hint">move a slider and the board rescores itself</span></h2>
+    <div class="sliders" id="sliders"></div>
+    <div class="sandboxRow">
+      <button id="resetModel" type="button">Reset to radar-4</button>
+      <span id="sandboxNote" class="note">Showing radar-4, the model as submitted.</span>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="toolbar">
+      <input id="q" type="search" placeholder="Search name, slug or category" aria-label="Search">
+      <label class="check"><input id="watchOnly" type="checkbox"> Watchlist only</label>
+      <select id="catFilter" aria-label="Category"><option value="">All categories</option></select>
+      <select id="sortBy" aria-label="Sort by">
+        <option value="rank">Sort: rank</option>
+        <option value="tvl">Sort: TVL</option>
+        <option value="growth">Sort: 7-day change</option>
+        <option value="value">Sort: implied value</option>
+      </select>
+      <span id="count" class="note"></span>
+    </div>
+    <div class="tableWrap">
+      <table id="board">
+        <thead><tr>
+          <th data-sort="rank">#</th>
+          <th data-sort="name">Protocol</th>
+          <th data-sort="category">Category</th>
+          <th>Chains</th>
+          <th data-sort="tvl" class="num">TVL</th>
+          <th data-sort="growth" class="num">7d</th>
+          <th data-sort="age" class="num">Age</th>
+          <th data-sort="value" class="num">Implied value</th>
+          <th>Farm on</th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <p class="note">Click a row for its detail view: the full arithmetic waterfall and its farm plan.</p>
+  </section>
+
+  <section class="panel" id="detailPanel" hidden>
+    <h2 id="detailTitle">Protocol detail</h2>
+    <div id="detail"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Already trading <span class="hint">live-token protocols, at the market's own value — never mixed into the ranked board</span></h2>
+    <div class="tableWrap">
+      <table id="liveTable">
+        <thead><tr><th>Protocol</th><th>Category</th><th class="num">TVL</th><th class="num">Market cap</th><th class="num">7d</th></tr></thead>
+        <tbody id="liveRows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel method">
+    <h2>How radar-4 scores</h2>
+    <p>Every row is scored by one function from the snapshot's own figures. No protocol name is special-cased.</p>
+    <ol class="formula">
+      <li><b>Base, log scale:</b> √TVL × 3000. A protocol 100× larger in TVL is worth 10× more, not 100×.</li>
+      <li><b>Growth:</b> 1 + clamp(7-day change, −60%, +120%) ÷ 100 × 0.40.</li>
+      <li><b>Chain pay:</b> min(1.35, 1 + 0.70 × summed chain weight). A chain's weight is its share of the live set's total TVL, each protocol's TVL split evenly across its chains.</li>
+      <li><b>Crowding:</b> 1 ÷ (1 + 0.06 × ln(n)), n the rankable protocols in the category. Crowded categories pay less.</li>
+      <li><b>Bleed:</b> when the 7-day drop passes −20%, up to a further 15% off at −40% and beyond, on top of the growth term.</li>
+      <li><b>Completeness haircut:</b> −3% when the 7-day change is missing, −2% when the listing date is unreported.</li>
+      <li><b>Maturity:</b> 0.85 + 0.15 × min(age in days, 730) ÷ 730. Protocols that ran longer with no token score higher.</li>
+    </ol>
+    <p>Implied value = base × growth × chain pay × crowding × bleed × haircut × maturity, rounded to whole dollars. The board is the snapshot's 40-protocol watchlist plus the 163 rankable pre-token protocols below the $50M floor with the most TVL: 203 rows. A protocol records no token when DefiLlama carries no market cap, CoinGecko id or symbol for it — that is a record, never proof it has none.</p>
+    <p id="chainWeights"></p>
+    <p class="note" id="sourceLine"></p>
+  </section>
+</main>
+<script src="../data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
